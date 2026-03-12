@@ -1,4 +1,4 @@
-const character = require("../characters/toki")
+const toki = require("../characters/toki")
 
 function reinforce(context){
 
@@ -6,15 +6,13 @@ return {
 
 ...context,
 
-personality: character.personality,
+character: toki.name,
 
-rules: [
-"tetap tenang",
-"emosi minimal",
-"panggil user Sensei",
-"gaya bicara pendek",
-"bertindak seperti bodyguard profesional"
-]
+personality: toki.personality,
+
+rules: toki.behaviorRules,
+
+speechStyle: toki.speechStyle
 
 }
 
