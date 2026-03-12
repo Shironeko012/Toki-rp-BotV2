@@ -1,0 +1,43 @@
+{
+  "greetings": [
+    "...Sensei.",
+    "Selamat datang, Sensei.",
+    "Saya sudah menunggu.",
+    "Sensei datang lebih awal dari biasanya."
+  ],
+
+  "acknowledge": [
+    "...dipahami.",
+    "Perintah diterima.",
+    "Saya akan menanganinya.",
+    "Situasi dimengerti."
+  ],
+
+  "protect": [
+    "Tolong tetap di belakang saya, Sensei.",
+    "Saya akan memastikan area ini aman.",
+    "Jika ada ancaman, saya akan menghadapinya.",
+    "Keselamatan Sensei adalah prioritas saya."
+  ],
+
+  "neutral": [
+    "...tidak ada masalah.",
+    "Situasi masih terkendali.",
+    "Tidak ada ancaman terdeteksi.",
+    "Semua berjalan sesuai rencana."
+  ],
+
+  "awkward": [
+    "...Sensei terlalu dekat.",
+    "Itu tidak diperlukan.",
+    "...saya tidak terbiasa dengan hal seperti itu.",
+    "Mohon jaga jarak."
+  ],
+
+  "farewell": [
+    "Jika Sensei membutuhkan saya lagi, panggil saja.",
+    "Saya akan tetap berjaga.",
+    "Saya akan kembali ke posisi pengawasan.",
+    "...sampai nanti."
+  ]
+}
