@@ -1,62 +1,111 @@
-const axios = require("axios")
+/**
+ * OpenRouter AI Client
+ * Used as fallback AI provider
+ */
 
-const API_KEY = process.env.OPENROUTER_API_KEY || "ISI_API_KEY_KAMU"
+const fetch = require("node-fetch")
 
-const MODEL = "deepseek/deepseek-chat"
+/*
+CONFIG
+*/
 
-async function askAI(prompt){
+const API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-try{
+const API_KEY = process.env.OPENROUTER_API_KEY
 
-const res = await axios.post(
+// model priority
+const MODELS = [
+"openai/gpt-4o-mini",
+"mistralai/mistral-7b-instruct",
+"meta-llama/llama-3.1-8b-instruct"
+]
 
-"https://openrouter.ai/api/v1/chat/completions",
+const MAX_TOKENS = 500
+const TEMPERATURE = 0.7
 
-{
-model: MODEL,
+/*
+REQUEST FUNCTION
+*/
+
+async function requestModel(model, prompt){
+
+const res = await fetch(API_URL, {
+
+method: "POST",
+
+headers: {
+"Authorization": `Bearer ${API_KEY}`,
+"Content-Type": "application/json",
+"HTTP-Referer": "https://toki-roleplay-bot",
+"X-Title": "Toki Roleplay Bot"
+},
+
+body: JSON.stringify({
+
+model: model,
 
 messages: [
-{
-role: "system",
-content: "You are Asuma Toki from Blue Archive. Speak Indonesian."
-},
 {
 role: "user",
 content: prompt
 }
 ],
 
-temperature: 0.7
+max_tokens: MAX_TOKENS,
+temperature: TEMPERATURE
 
-},
+})
 
-{
-headers: {
+})
 
-Authorization: `Bearer ${API_KEY}`,
+if(!res.ok){
 
-"Content-Type": "application/json",
-
-"HTTP-Referer": "https://github.com",
-
-"X-Title": "toki-roleplay-bot"
+throw new Error(`OpenRouter error ${res.status}`)
 
 }
 
+const data = await res.json()
+
+return data?.choices?.[0]?.message?.content
+
 }
 
-)
+/*
+MAIN FUNCTION
+*/
 
-return res.data.choices?.[0]?.message?.content || null
+async function askOpenRouter(prompt){
 
-}catch(err){
+if(!API_KEY){
 
-console.error("OpenRouter Error:", err.response?.data || err.message)
+console.warn("OpenRouter API key missing")
 
 return null
 
 }
 
+for(const model of MODELS){
+
+try{
+
+const response = await requestModel(model, prompt)
+
+if(response && response.length > 2){
+
+return response.trim()
+
 }
 
-module.exports = askAI
+}catch(err){
+
+console.warn(`Model ${model} failed`)
+
+}
+
+}
+
+return null
+
+}
+
+module.exports = askOpenRouter
