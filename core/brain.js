@@ -1,6 +1,6 @@
 /**
  * CORE BRAIN CONTROLLER
- * Orchestrates all engines and AI interaction
+ * Orchestrates engines and AI providers
  */
 
 const contextEngine = require("./contextEngine")
@@ -12,19 +12,33 @@ const probabilistic = require("./probabilisticEngine")
 
 const memory = require("../engines/memoryEngine")
 
-const askAI = require("../ai/gemini")
+const askGemini = require("../ai/gemini")
+const askOpenRouter = require("../ai/openrouter")
 
 const antiInjection = require("../security/antiPromptInjection")
 
-/*
-CONFIG
-*/
+/* CONFIG */
 
 const MAX_MESSAGE_LENGTH = 500
+const AI_TIMEOUT = 15000
 
-/*
-MAIN BRAIN
-*/
+/* AI CALL WITH TIMEOUT */
+
+async function callAIWithTimeout(fn, prompt){
+
+return Promise.race([
+
+fn(prompt),
+
+new Promise((_,reject)=>
+setTimeout(()=>reject(new Error("AI timeout")), AI_TIMEOUT)
+)
+
+])
+
+}
+
+/* MAIN BRAIN */
 
 async function brain(user, message){
 
@@ -36,8 +50,7 @@ INPUT SANITIZATION
 
 let safeMessage = antiInjection.filter(message)
 
-if(!safeMessage)
-safeMessage = "..."
+if(!safeMessage) safeMessage = "..."
 
 safeMessage = safeMessage.slice(0, MAX_MESSAGE_LENGTH)
 
@@ -74,13 +87,45 @@ PROMPT COMPRESSION
 prompt = compressor.compress(prompt)
 
 /*
-AI CALL
+========================
+AI PRIMARY (GEMINI)
+========================
 */
 
-let aiResponse = await askAI(prompt)
+let aiResponse = null
+
+try{
+
+aiResponse = await callAIWithTimeout(askGemini, prompt)
+
+}catch(err){
+
+console.warn("Gemini failed, switching to OpenRouter")
+
+}
 
 /*
-FALLBACK RESPONSE
+========================
+AI FALLBACK (OPENROUTER)
+========================
+*/
+
+if(!aiResponse){
+
+try{
+
+aiResponse = await callAIWithTimeout(askOpenRouter, prompt)
+
+}catch(err){
+
+console.warn("OpenRouter failed")
+
+}
+
+}
+
+/*
+FINAL FALLBACK
 */
 
 if(!aiResponse || aiResponse.length < 2){
