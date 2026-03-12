@@ -1,3 +1,8 @@
+/**
+ * CORE BRAIN CONTROLLER
+ * Orchestrates all engines and AI interaction
+ */
+
 const contextEngine = require("./contextEngine")
 const personality = require("./personalitySystem")
 const promptComposer = require("./promptComposer")
@@ -11,40 +16,95 @@ const askAI = require("../ai/gemini")
 
 const antiInjection = require("../security/antiPromptInjection")
 
+/*
+CONFIG
+*/
+
+const MAX_MESSAGE_LENGTH = 500
+
+/*
+MAIN BRAIN
+*/
+
 async function brain(user, message){
 
 try{
 
-// sanitize user input
-const safeMessage = antiInjection.filter(message)
+/*
+INPUT SANITIZATION
+*/
 
-// build context
+let safeMessage = antiInjection.filter(message)
+
+if(!safeMessage)
+safeMessage = "..."
+
+safeMessage = safeMessage.slice(0, MAX_MESSAGE_LENGTH)
+
+/*
+BUILD CONTEXT
+*/
+
 let context = await contextEngine.build(user, safeMessage)
 
-// enforce personality
+/*
+PERSONALITY ENFORCEMENT
+*/
+
 context = personality.reinforce(context)
 
-// detect intent
+/*
+INTENT DETECTION
+*/
+
 const intent = probabilistic.detectIntent(safeMessage)
 
-// compose prompt
+context.intent = intent
+
+/*
+PROMPT COMPOSITION
+*/
+
 let prompt = promptComposer.compose(context)
 
-// compress prompt
+/*
+PROMPT COMPRESSION
+*/
+
 prompt = compressor.compress(prompt)
 
-// ask AI
+/*
+AI CALL
+*/
+
 let aiResponse = await askAI(prompt)
 
-if(!aiResponse)
+/*
+FALLBACK RESPONSE
+*/
+
+if(!aiResponse || aiResponse.length < 2){
+
 aiResponse = "...dipahami."
 
-// process response
+}
+
+/*
+POST PROCESS RESPONSE
+*/
+
 const finalResponse = responseEngine.process(user, aiResponse)
 
-// save memory
+/*
+MEMORY UPDATE
+*/
+
 await memory.pushMemory(user, `User: ${safeMessage}`)
-await memory.pushMemory(user, `Toki: ${finalResponse}`)
+await memory.pushMemory(user, `Toki: ${aiResponse}`)
+
+/*
+RETURN RESPONSE
+*/
 
 return finalResponse
 
@@ -52,7 +112,13 @@ return finalResponse
 
 console.error("Brain Error:", err)
 
-return "*Toki mengamati sekeliling dengan tenang.*\n\n\"...terjadi gangguan kecil.\""
+/*
+FAILSAFE RESPONSE
+*/
+
+return `*Toki mengamati sekeliling dengan tenang.*
+
+"...terjadi gangguan kecil pada sistem."`
 
 }
 
