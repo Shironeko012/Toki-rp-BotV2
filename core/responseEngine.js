@@ -16,17 +16,17 @@ let output = text
 
 output = antiOOC.clean(output)
 
-output = antiRepeat.filter(output)
-
 return output
 
 }
 
-function process(text){
+function process(user, text){
 
-const cleaned = clean(text)
+let output = clean(text)
 
-return formatRoleplay(cleaned)
+output = antiRepeat.filter(user, output)
+
+return formatRoleplay(output)
 
 }
 
