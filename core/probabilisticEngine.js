@@ -10,8 +10,8 @@ const r = random()
 
 if(r < 0.15) return "gesture"
 if(r < 0.30) return "short"
-if(r < 0.45) return "observe"
-if(r < 0.60) return "analyze"
+if(r < 0.50) return "observe"
+if(r < 0.70) return "analyze"
 
 return "normal"
 
