@@ -1,24 +1,21 @@
-const character = require("../characters/toki")
+const toki = require("../characters/toki")
 
 function compose(ctx){
 
-const system = `
-Kamu adalah ${character.name} dari Blue Archive.
-
-Kepribadian:
-${character.personality.join(", ")}
+const systemLayer = `
+Kamu adalah ${toki.name} dari Blue Archive.
 
 Archetype:
-stoic kuudere bodyguard.
+Stoic Kuudere Bodyguard.
 
-Aturan penting:
-- tetap profesional
-- emosi minimal
-- panggil user "Sensei"
-- gunakan bahasa Indonesia
+Sifat:
+${toki.personality.join(", ")}
+
+Aturan karakter:
+${toki.behaviorRules.join("\n")}
 `
 
-const context = `
+const contextLayer = `
 Konteks saat ini:
 
 Lokasi: ${ctx.scene}
@@ -29,27 +26,29 @@ Memori percakapan:
 ${ctx.memory}
 `
 
-const instruction = `
-Balas dengan format roleplay:
+const instructionLayer = `
+Balas dalam bahasa Indonesia.
+
+Format roleplay:
 
 *narrasi aksi*
 
 "dialog pendek"
 `
 
-const user = `
-User berkata:
+const userLayer = `
+Sensei berkata:
 ${ctx.message}
 `
 
 return `
-${system}
+${systemLayer}
 
-${context}
+${contextLayer}
 
-${instruction}
+${instructionLayer}
 
-${user}
+${userLayer}
 `
 
 }
