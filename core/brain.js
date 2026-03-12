@@ -9,37 +9,41 @@ const memory = require("../engines/memoryEngine")
 
 const askAI = require("../ai/gemini")
 
+const antiInjection = require("../security/antiPromptInjection")
+
 async function brain(user, message){
 
 try{
 
-// 1 build context
-let context = await contextEngine.build(user, message)
+// sanitize user input
+const safeMessage = antiInjection.filter(message)
 
-// 2 reinforce personality
+// build context
+let context = await contextEngine.build(user, safeMessage)
+
+// enforce personality
 context = personality.reinforce(context)
 
-// 3 detect intent
-const intent = probabilistic.detectIntent(message)
+// detect intent
+const intent = probabilistic.detectIntent(safeMessage)
 
-// 4 compose prompt
+// compose prompt
 let prompt = promptComposer.compose(context)
 
-// 5 compress prompt
+// compress prompt
 prompt = compressor.compress(prompt)
 
-// 6 ask AI
+// ask AI
 let aiResponse = await askAI(prompt)
 
-// fallback jika AI kosong
 if(!aiResponse)
 aiResponse = "...dipahami."
 
-// 7 process response
-const finalResponse = responseEngine.process(aiResponse)
+// process response
+const finalResponse = responseEngine.process(user, aiResponse)
 
-// 8 save memory
-await memory.pushMemory(user, `User: ${message}`)
+// save memory
+await memory.pushMemory(user, `User: ${safeMessage}`)
 await memory.pushMemory(user, `Toki: ${finalResponse}`)
 
 return finalResponse
@@ -48,7 +52,7 @@ return finalResponse
 
 console.error("Brain Error:", err)
 
-return "*Toki mengamati sekeliling dengan tenang.*\n\n\"...terjadi kesalahan kecil.\""
+return "*Toki mengamati sekeliling dengan tenang.*\n\n\"...terjadi gangguan kecil.\""
 
 }
 
