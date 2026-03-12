@@ -1,3 +1,8 @@
+/**
+ * TOKI ROLEPLAY BOT
+ * WhatsApp AI Roleplay System
+ */
+
 // FIX crypto for Baileys
 const crypto = require("crypto")
 if (!global.crypto) global.crypto = crypto.webcrypto
@@ -13,41 +18,49 @@ fetchLatestBaileysVersion
 
 const qrcodeTerminal = require("qrcode-terminal")
 const QRCode = require("qrcode")
-
 const pino = require("pino")
 
 const handler = require("./handler")
-const { antiCrash } = require("./utils/antiCrash")
 
+/*
+OPTIONAL SYSTEMS
+*/
+const { antiCrash } = require("./utils/antiCrash")
 const routine = require("./systems/routine")
 
 const app = express()
 
 /*
+=====================
 WEB SERVER
+=====================
 */
 
 app.get("/", (req,res)=>{
-res.send("TOKI RP BOT V2 ONLINE")
+res.send("TOKI ROLEPLAY BOT ONLINE")
 })
 
 app.get("/qr",(req,res)=>{
 res.sendFile(__dirname + "/qr.png")
 })
 
-app.listen(process.env.PORT || 3000,()=>{
-console.log("Web server running")
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT,()=>{
+console.log("Web server running on port", PORT)
 })
 
 /*
+=====================
 START BOT
+=====================
 */
 
 async function start(){
 
 try{
 
-console.log("Starting TOKI RP BOT...")
+console.log("Starting TOKI ROLEPLAY BOT...")
 
 const { state, saveCreds } =
 await useMultiFileAuthState("./session")
@@ -62,22 +75,28 @@ auth: state,
 
 logger: pino({ level:"silent" }),
 
-browser:["TOKI","AI","V2"],
+browser:["TOKI","AI","ROLEPLAY"],
 
 syncFullHistory:false,
 
-printQRInTerminal:false
+printQRInTerminal:false,
+
+markOnlineOnConnect:true
 
 })
 
 /*
+=====================
 SAVE SESSION
+=====================
 */
 
 sock.ev.on("creds.update", saveCreds)
 
 /*
+=====================
 CONNECTION UPDATE
+=====================
 */
 
 sock.ev.on("connection.update", async(update)=>{
@@ -85,7 +104,7 @@ sock.ev.on("connection.update", async(update)=>{
 const { connection, lastDisconnect, qr } = update
 
 /*
-GENERATE QR
+QR CODE
 */
 
 if(qr){
@@ -102,20 +121,32 @@ console.log("QR saved as qr.png")
 
 if(process.env.RAILWAY_STATIC_URL){
 
-console.log("Open this in browser:")
+console.log("Open QR here:")
 console.log(process.env.RAILWAY_STATIC_URL + "/qr")
 
 }
 
 }
 
+/*
+CONNECTING
+*/
+
 if(connection === "connecting"){
 console.log("Connecting to WhatsApp...")
 }
 
+/*
+CONNECTED
+*/
+
 if(connection === "open"){
 console.log("TOKI BOT CONNECTED")
 }
+
+/*
+DISCONNECTED
+*/
 
 if(connection === "close"){
 
@@ -135,19 +166,24 @@ setTimeout(start,5000)
 })
 
 /*
+=====================
 MESSAGE HANDLER
+=====================
 */
 
 sock.ev.on("messages.upsert", async({ messages })=>{
 
 try{
 
-const msg = messages[0]
+const msg = messages?.[0]
 
-if(!msg?.message) return
+if(!msg) return
 
 // ignore status broadcast
 if(msg.key?.remoteJid === "status@broadcast") return
+
+// ignore empty messages
+if(!msg.message) return
 
 await handler(sock,msg)
 
@@ -160,10 +196,14 @@ console.error("Handler error:", err)
 })
 
 /*
-SYSTEMS
+=====================
+SYSTEM ROUTINES
+=====================
 */
 
+if(routine){
 routine(sock)
+}
 
 }catch(err){
 
@@ -176,13 +216,19 @@ setTimeout(start,5000)
 }
 
 /*
+=====================
 ANTI CRASH
+=====================
 */
 
+if(antiCrash){
 antiCrash()
+}
 
 /*
+=====================
 RUN BOT
+=====================
 */
 
 start()
