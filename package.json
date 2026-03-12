@@ -1,1 +1,31 @@
-
+{
+  "name": "toki-roleplay-bot",
+  "version": "2.0.0",
+  "description": "AI Roleplay WhatsApp Bot - Asuma Toki (Blue Archive)",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "restart": "node index.js"
+  },
+  "keywords": [
+    "whatsapp-bot",
+    "ai-roleplay",
+    "baileys",
+    "blue-archive",
+    "toki"
+  ],
+  "author": "Reszz x shironeko",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0",
+    "express": "^4.19.2",
+    "pino": "^9.0.0",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
